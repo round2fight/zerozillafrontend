@@ -11,6 +11,8 @@ export default function Home() {
   const [password, setPassword] = useState("password123");
   const [agencies, setAgencies] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   const [inputValues, setinputValues] = useState({
     agencyName: "BluePrint Tech",
     agencyAddress: "123 Jaynagar",
@@ -34,6 +36,8 @@ export default function Home() {
       setClients(res.data);
     } catch (err) {
       console.error("Error fetching clients:", err);
+    } finally {
+      setLoading(false); // Hide spinner after request completes
     }
   };
   const [clients, setClients] = useState([]);
@@ -50,6 +54,7 @@ export default function Home() {
   }, []);
 
   const handleLogin = async () => {
+    setLoading(true); // Show spinner
     try {
       const res = await axios.post(apiURL + "auth/login", {
         email,
@@ -57,23 +62,29 @@ export default function Home() {
       });
       localStorage.setItem("token", res.data.token);
       setToken(res.data.token);
-      alert("Login successful");
+      // alert("Login successful");
     } catch (err) {
       alert("Login failed");
+    } finally {
+      setLoading(false); // Hide spinner after request completes
     }
   };
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
       localStorage.removeItem("token");
       setToken(null);
       alert("Logout successful");
     } catch (err) {
       alert("Logout failed");
+    } finally {
+      setLoading(false); // Hide spinner after request completes
     }
   };
 
   const fetchTopClients = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(apiURL + "clients/top-clients", {
         headers: { Authorization: `Bearer ${token}` },
@@ -82,6 +93,8 @@ export default function Home() {
       setAgencies(res.data);
     } catch (err) {
       alert("Failed to fetch clients");
+    } finally {
+      setLoading(false); // Hide spinner after request completes
     }
   };
 
@@ -102,6 +115,7 @@ export default function Home() {
   // },
 
   const handleCreateAgencyClient = async () => {
+    setLoading(true);
     const {
       agencyName,
       agencyAddress,
@@ -162,6 +176,8 @@ export default function Home() {
       console.log("Response:", res.data);
     } catch (err) {
       alert("Failed to create agency & client. Try changing the email");
+    } finally {
+      setLoading(false); // Hide spinner after request completes
     }
   };
 
@@ -178,6 +194,7 @@ export default function Home() {
   };
 
   const deleteClient = async (clientId) => {
+    setLoading(true);
     try {
       await axios.delete(apiURL + `clients/${clientId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -187,6 +204,8 @@ export default function Home() {
     } catch (error) {
       console.error("Error deleting client:", error);
       alert("Failed to delete client.");
+    } finally {
+      setLoading(false); // Hide spinner after request completes
     }
   };
 
@@ -209,6 +228,7 @@ export default function Home() {
   };
 
   const handleUpdateClient = async (clientId) => {
+    setLoading(true);
     console.log(editClient), clientId;
     if (!editClient[clientId]) {
       alert("No changes made.");
@@ -242,6 +262,8 @@ export default function Home() {
     } catch (err) {
       console.error("Error updating client:", err);
       alert("Failed to update client");
+    } finally {
+      setLoading(false); // Hide spinner after request completes
     }
   };
   return (
@@ -251,7 +273,7 @@ export default function Home() {
           {!token ? (
             <div className="flex flex-col ">
               <div className="flex items-center justify-center">
-                <ol className="flex items-center justify-center mb-2 list-inside list-decimal text-lg text-center sm:text-left ">
+                <ol className="flex items-center justify-center list-inside list-decimal text-lg text-center sm:text-left ">
                   Login
                 </ol>
               </div>
@@ -271,9 +293,21 @@ export default function Home() {
               <button
                 className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent h-10 sm:min-w-44"
                 onClick={handleLogin}
+                disabled={!!loading}
               >
-                Login
+                {loading ? (
+                  <div className="flex justify-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full"></div>
+                  </div>
+                ) : (
+                  "Login"
+                )}
               </button>
+              <div className="text-gray-500 text-center text-xs mt-6">
+                Please use the credentials already mentioned to prevent signing
+                up.<br></br> Do wait for a few seconds for the backend server to
+                spin up.
+              </div>
             </div>
           ) : (
             <div className="flex flex-col ">
@@ -536,7 +570,13 @@ export default function Home() {
           )}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
+      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
+        <div className="text-xs text-gray-500 flex justify-center items-center text-center ">
+          ZeroZilla F2F assignment - Roshan Daniel <br></br>Backend hosted on
+          Render<br></br> Frontend hosted on Vercel <br></br> MongoDB hosted on
+          MongoDBAtlas-Community
+        </div>
+      </footer>
     </div>
   );
 }
