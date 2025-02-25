@@ -23,7 +23,7 @@ export default function Home() {
     clientTotalBill: 5000,
   });
 
-  const apiURL = "http://localhost:5000/api/";
+  const apiURL = process.env.NEXT_PUBLIC_API_SERVER_URL;
 
   const fetchClients = async () => {
     try {
